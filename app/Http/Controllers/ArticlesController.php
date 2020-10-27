@@ -17,11 +17,9 @@ class ArticlesController extends Controller
         ]);
     }
 
-    public function show($articleId) 
+    public function show(Article $article) 
     {
         // Show a single resource
-        $article = Article::find($articleId);
-
         return view('articles.show', [
             'article' => $article
         ]);
@@ -34,55 +32,36 @@ class ArticlesController extends Controller
 
     public function store() {
         // Persist the new resource
-
-        request()->validate([
-            'title' => ['required', 'min:5', 'max:255'],
-            'excerpt' => ['required',],
-            'body' => ['required',]
-        ]);
-
-        $article = new Article();
-
-        $article->title = request('title');
-        $article->excerpt = request('excerpt');
-        $article->body = request('body');
-
-        $article->save();
+        Article::create($this->validateArticle());
 
         return redirect('/articles');
-
     }
 
-    public function edit($articleId) {
+    public function edit(Article $article) {
         // Show a view to edit an existing resource
-        $article = Article::find($articleId);
         return view('articles.edit', [
             'article' => $article
         ]);
     }
 
-    public function update($articleId) {
-
-        request()->validate([
-            'title' => ['required', 'min:5', 'max:255'],
-            'excerpt' => ['required',],
-            'body' => ['required',]
-        ]);
-                
+    public function update(Article $article) {
         // Persist the edited resource
-        $article = Article::find($articleId);
-
-        $article->title = request('title');
-        $article->excerpt = request('excerpt');
-        $article->body = request('body');
-
-        $article->save();
+        $article->update($this->validateArticle());
 
         return redirect('/articles/' . $article->id);
     }
 
     public function destroy() {
         // Delete a resource
+    }
+
+    protected function validateArticle()
+    {
+        return request()->validate([
+            'title' => ['required', 'min:5', 'max:255'],
+            'excerpt' => ['required',],
+            'body' => ['required',]
+        ]);
     }
 
 
