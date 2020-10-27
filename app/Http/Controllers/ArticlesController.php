@@ -48,7 +48,7 @@ class ArticlesController extends Controller
         // Persist the edited resource
         $article->update($this->validateArticle());
 
-        return redirect('/articles/' . $article->id);
+        return redirect(route('articles.show', $article));
     }
 
     public function destroy() {
