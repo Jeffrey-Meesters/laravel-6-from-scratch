@@ -4,13 +4,19 @@ namespace App\Http\Controllers;
 
 use App\Models\Article;
 use Illuminate\Http\Request;
+use App\Models\Tag;
 
 class ArticlesController extends Controller
 {
     public function index() 
     {
-        // Render a list of a resource
-        $articles = Article::latest()->get();
+        if(request('tag')) {
+            $articles = Tag::where('name', request('tag'))->firstOrFail()->articles;
+
+        } else {
+            // Render a list of a resource
+            $articles = Article::latest()->get();
+        }
 
         return view('articles.index', [
             'articles' => $articles
@@ -27,12 +33,20 @@ class ArticlesController extends Controller
 
     public function create() {
         // Shows a view to create a new resource
-        return view('articles.create');
+        return view('articles.create', [
+            'tags' => Tag::all()
+        ]);
     }
 
-    public function store() {
-        // Persist the new resource
-        Article::create($this->validateArticle());
+    public function store(Request $request)
+    {
+        $this->validateArticle($request);
+        
+        $article = new Article(request(['title', 'body', 'excerpt']));    
+        $article->user_id = 2;   // currently hardcoded
+        $article->save();
+        
+        $article->tags()->attach(request('tags')); 
 
         return redirect('/articles');
     }
@@ -60,7 +74,8 @@ class ArticlesController extends Controller
         return request()->validate([
             'title' => ['required', 'min:5', 'max:255'],
             'excerpt' => ['required',],
-            'body' => ['required',]
+            'body' => ['required',],
+            'tags' => 'exists:tags,id'
         ]);
     }
 
